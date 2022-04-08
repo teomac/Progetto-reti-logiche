@@ -21,22 +21,20 @@ end project_reti_logiche;
 architecture Behavioral of project_reti_logiche is
     type STATE_TYPE is (
     START,
-    PREPARE_READ,
+    PREPARE_READ_NUMBER,
     READ_WORDS_NUMBER,
-    TEST0,
-    PREPARE_WORD,
-    TEST,
-    --TEST1,
+    CHECK_WORDS_NUMBER,
+    START_WORD_READ,
+    SET_WORD_ADDRESS,
+    PREPARE_READ_WORD,
     READ_WORD,
-    TEST3,
-    --TEST4, 
     CONVERTER,
     SAVE_FIRST,
     PREPARE_ADDRESS1,
     PREPARE_ADDRESS2, 
     SAVE_SECOND,
-    TEST2, 
-    END_PROCESS, 
+    CHECK_COUNTER, 
+    END_ELABORATION, 
     FINAL
     );
   
@@ -45,23 +43,17 @@ signal state : STATE_TYPE := START; -- stato della macchina (inizializzato a sta
 signal counter : std_logic_vector(15 downto 0) := (others => '0');
 signal save_counter : std_logic_vector(15 downto 0) := "0000001111101000";
 signal n : std_logic_vector(7 downto 0) := (others => '0'); -- numero di parole per ciascuna elaborazione
---signal word : std_logic_vector(7 downto 0) := (others => '0');
-signal prova : std_logic_vector(7 downto 0) := (others => '0'); 
-
-
 
 
 begin
     process(i_clk, i_rst)
     variable temp_1 : std_logic_vector(7 downto 0) := (others => '0');
-    variable z : integer := 0;
     variable p1k : std_logic_vector(7 downto 0) := (others => '0');
     variable p2k : std_logic_vector(7 downto 0) := (others => '0');
     variable uk1, uk2 : std_logic_vector(7 downto 0) := (others => '0');
     variable word : std_logic_vector(7 downto 0) := (others => '0');
+    
     begin
-
-
             
             if i_rst = '1' then
                 uk1 := (others => '0');
@@ -77,12 +69,12 @@ begin
                             o_en <= '1';
                             o_we <= '0';
                         
-                            state <= PREPARE_READ;
+                            state <= PREPARE_READ_NUMBER;
                         else
                             state <= START;
                         end if;
                         
-                    when PREPARE_READ =>
+                    when PREPARE_READ_NUMBER =>
                         
                         
                         state <= READ_WORDS_NUMBER;
@@ -97,44 +89,39 @@ begin
                         temp_1 := i_data;
                         n <= (others => '0');
                         
-                        state <= TEST0;
+                        state <= CHECK_WORDS_NUMBER;
                         
 
                     
-                    when TEST0 =>
+                    when CHECK_WORDS_NUMBER =>
                         if (temp_1 = 0) then
-                            state <= END_PROCESS;
+                            state <= END_ELABORATION;
                 
                         else
                             n <= temp_1;
                         
                             o_en <= '1';
                             o_we <= '0';
-                            state <= PREPARE_WORD;
+                            state <= START_WORD_READ;
                         
                         end if;                    
                     
                         
-                    when PREPARE_WORD =>
+                    when START_WORD_READ =>
                         
                         counter <= std_logic_vector(unsigned(counter) + "00000001");
                         
                     
-                        state <= TEST;
+                        state <= SET_WORD_ADDRESS;
                         
-                    when TEST =>
+                        
+                    when SET_WORD_ADDRESS =>
                         o_we <= '0';
-                        --p1k := (others => '0');
-                        --p2k := (others => '0');
-
                         o_address <= counter;
-                        state <= TEST3;
+                        state <= PREPARE_READ_WORD;
+
                         
-                    --when TEST1 =>
-                           
-                        --state <= TEST3;
-                        
-                    when TEST3 =>
+                    when PREPARE_READ_WORD =>
                             
                             
                         state <= READ_WORD;
@@ -142,17 +129,9 @@ begin
                     when READ_WORD =>
 
                         word := i_data;
-                        prova <= i_data;
                         
                         state <= CONVERTER;
-                        
-
-                        
-                    --when TEST4 =>
-        
-                        --state <= CONVERTER;
-                        
-                        
+               
                         
                     when CONVERTER =>
                         p1k(7) := (word(7) XOR uk2(0));
@@ -210,8 +189,6 @@ begin
                         
                     when PREPARE_ADDRESS1 =>
                     
-                        
-                    
                         state <= SAVE_FIRST;
 
                         
@@ -234,9 +211,7 @@ begin
                         state <= PREPARE_ADDRESS2;
                         
                     when PREPARE_ADDRESS2 =>
-                        
-                        
-                    
+
                         state <= SAVE_SECOND;
                         
                     when SAVE_SECOND =>
@@ -257,19 +232,19 @@ begin
                             save_counter <=  std_logic_vector(unsigned(save_counter)+ "1");
                             counter <=  std_logic_vector(unsigned(counter)+ "1");
                             
-                            state <= TEST2;
+                            state <= CHECK_COUNTER;
                             
-                        when TEST2 =>
+                        when CHECK_COUNTER =>
                             
                             if counter > n then
-                                state <= END_PROCESS;
+                                state <= END_ELABORATION;
                                 
                             else
-                                state <= TEST;
+                                state <= SET_WORD_ADDRESS;
                             end if;
                             
                             
-                        when END_PROCESS =>
+                        when END_ELABORATION =>
                             o_en <= '0';
                             o_we <= '0';
                             o_done <= '1';
@@ -278,7 +253,7 @@ begin
                                 state <= FINAL;
                             
                             else
-                                state <= END_PROCESS;
+                                state <= END_ELABORATION;
                             end if;
                         
                         when FINAL =>
