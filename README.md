@@ -1,1 +1,3 @@
-# Progetto-reti-logiche-2022
+# Progetto Reti Logiche 2022
+
+Matteo Laini, Matteo Macaluso
