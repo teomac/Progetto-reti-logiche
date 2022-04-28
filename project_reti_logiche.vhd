@@ -30,7 +30,7 @@ architecture Behavioral of project_reti_logiche is
     READ_WORD,
     CONVERTER,
     SAVE_FIRST,
-    PREPARE_ADDRESS2, 
+    PREPARE_ADDRESS, 
     SAVE_SECOND,
     CHECK_COUNTER, 
     END_ELABORATION, 
@@ -182,7 +182,7 @@ begin
                         uk2 := uk1;
                         uk1(0) := word(0);
                         
-                        o_address <=  std_logic_vector(unsigned(save_counter));  --CONTROLLARE SE PRIMA VA FATTO O_ADDRESS O O_DATA
+                        o_address <=  std_logic_vector(unsigned(save_counter)); 
                     
                         state <= SAVE_FIRST;
                         
@@ -202,16 +202,16 @@ begin
                         
                         save_counter <=  std_logic_vector(unsigned(save_counter)+ "1");
                         
-                        state <= PREPARE_ADDRESS2;
+                        state <= PREPARE_ADDRESS;
                         
-                    when PREPARE_ADDRESS2 =>
+                    when PREPARE_ADDRESS =>
 
                         state <= SAVE_SECOND;
                         
                     when SAVE_SECOND =>
                             o_en <= '1';
                             o_we <= '1';
-                            o_address <=  std_logic_vector(unsigned(save_counter));  --CONTROLLARE SE PRIMA VA FATTO O_ADDRESS O O_DATA
+                            o_address <=  std_logic_vector(unsigned(save_counter));
                             
                         
                             o_data(7) <= p1k(3);
